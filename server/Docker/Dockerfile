@@ -1,4 +1,4 @@
-FROM openjdk:11-jre
+FROM ubuntu
 MAINTAINER Florian Mauduit <f@lf.je>
 
 #############################################################
@@ -14,7 +14,7 @@ MAINTAINER Florian Mauduit <f@lf.je>
 ###
 
 ## Server Port
-ENV BLYNK_SERVER_VERSION 0.41.5
+ENV BLYNK_SERVER_VERSION 0.41.7
 ENV HARDWARE_MQTT_PORT 8440
 ENV HTTP_PORT 8080
 ENV HTTPS_PORT 9443
@@ -66,6 +66,12 @@ ENV ENABLE_RAW_DB_DATA_STORE false
 ENV INITIAL_ENERGY 100000
 ENV ADMIN_EMAIL admin@blynk.cc
 ENV ADMIN_PASS admin
+
+
+############################################################
+# Install OpenJDK
+RUN apt update && apt install -y openjdk-11-jdk libxrender1 maven
+RUN apt install -y curl
 
 
 ############################################################

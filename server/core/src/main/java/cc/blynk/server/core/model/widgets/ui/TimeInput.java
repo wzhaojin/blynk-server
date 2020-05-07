@@ -3,6 +3,7 @@ package cc.blynk.server.core.model.widgets.ui;
 import cc.blynk.server.core.model.enums.PinMode;
 import cc.blynk.server.core.model.enums.PinType;
 import cc.blynk.server.core.model.widgets.OnePinWidget;
+import cc.blynk.server.core.model.widgets.Widget;
 import cc.blynk.server.core.model.widgets.others.rtc.StringToZoneId;
 import cc.blynk.server.core.model.widgets.others.rtc.ZoneIdToString;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -78,6 +79,22 @@ public class TimeInput extends OnePinWidget {
             default :
                 return Integer.parseInt(value);
         }
+    }
+
+    @Override
+    public void updateValue(Widget oldWidget) {
+        if (oldWidget instanceof TimeInput) {
+            TimeInput oldTimeInput = (TimeInput) oldWidget;
+            if (oldTimeInput.value != null) {
+                this.updateIfSame(oldTimeInput.deviceId, oldTimeInput.pin, oldTimeInput.pinType, oldTimeInput.value);
+            }
+        }
+    }
+
+    @Override
+    public void erase() {
+        super.erase();
+        this.tzName = null;
     }
 
     @Override

@@ -136,6 +136,38 @@ public class MainWorkflowTest extends SingleServerInstancePerTest {
     }
 
     @Test
+    public void testResetEmail2() throws Exception {
+        String userName = getUserName();
+        TestAppClient appClient = new TestAppClient(properties);
+        appClient.start();
+
+        appClient.send("resetPass start " + userName + " " + AppNameUtil.BLYNK);
+        appClient.verifyResult(ok(1));
+
+        appClient.send("resetPass start " + userName + " " + AppNameUtil.BLYNK);
+        appClient.verifyResult(notAllowed(2));
+
+        String token = holder.tokensPool.getTokens().entrySet().iterator().next().getKey();
+        verify(holder.mailWrapper).sendWithAttachment(eq(userName), eq("Password restoration for your Blynk account."), contains("http://blynk-cloud.com/restore?token=" + token), any(QrHolder.class));
+
+        appClient.send("resetPass verify 123");
+        appClient.verifyResult(notAllowed(3));
+
+        appClient.send("resetPass verify " + token);
+        appClient.verifyResult(ok(4));
+
+        appClient.send("resetPass reset " + token + " " + SHA256Util.makeHash("2", userName));
+        appClient.verifyResult(ok(5));
+        //verify(holder.mailWrapper).sendHtml(eq(userName), eq("Your new password on Blynk"), contains("You have changed your password on Blynk. Please, keep it in your records so you don't forget it."));
+
+        appClient.login(userName, "1");
+        appClient.verifyResult(new ResponseMessage(6, USER_NOT_AUTHENTICATED));
+
+        appClient.login(userName, "2");
+        appClient.verifyResult(ok(7));
+    }
+
+    @Test
     public void registrationAllowedOnlyOncePerConnection() throws Exception {
         TestAppClient appClient = new TestAppClient(properties);
 
@@ -544,7 +576,7 @@ public class MainWorkflowTest extends SingleServerInstancePerTest {
         verify(clientPair.appClient.responseMock, timeout(500)).channelRead(any(), eq(notAllowed(1)));
 
         clientPair.appClient.send("addEnergy " + "1000" + "\0" + "A3B93EE9-BC65-499E-A660-F2A84F2AF1FC");
-        verify(clientPair.appClient.responseMock, timeout(500)).channelRead(any(), eq(notAllowed(2)));
+        verify(clientPair.appClient.responseMock, timeout(500)).channelRead(any(), eq(ok(2)));
 
         clientPair.appClient.send("addEnergy " + "1000" + "\0" + "com.blynk.energy.280001461578468247");
         verify(clientPair.appClient.responseMock, timeout(500)).channelRead(any(), eq(notAllowed(3)));
